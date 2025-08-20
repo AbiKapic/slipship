@@ -1,0 +1,33 @@
+{
+    "files.associations": {
+        "*.tsx": "xml",
+        "*.tmx": "xml",
+        "*.ts": "typescript"
+    },
+    "xml.format.enabled": true,
+    "xml.validation.enabled": true,
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/node_modules": true,
+        "**/.dart_tool": true,
+        "**/.flutter-plugins": true,
+        "**/.flutter-plugins-dependencies": true,
+        "**/build": true,
+        "**/.fvm": false
+    },
+    "search.exclude": {
+        "**/build": true,
+        "**/.dart_tool": true,
+        "**/.fvm": false
+    },
+    "dart.flutterSdkPath": ".fvm/versions/stable",
+    "dart.sdkPath": ".fvm/flutter_sdk/bin/cache/dart-sdk",
+    "dart.flutterSdkPaths": [
+        ".fvm/flutter_sdk"
+    ]
+}
