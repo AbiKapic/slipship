@@ -1,5 +1,4 @@
 import 'package:flame/components.dart';
-import 'package:flame/game.dart';
 
 /// Base class for all game systems
 abstract class GameSystem extends Component {

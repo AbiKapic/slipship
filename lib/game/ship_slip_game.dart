@@ -1,97 +1,124 @@
-import 'dart:ui';
-import 'dart:math' as math;
-
 import 'package:flame/components.dart';
-import 'package:flame/experimental.dart' show Rectangle;
-import 'package:flame/input.dart';
-import 'package:flame_tiled/flame_tiled.dart';
+import 'package:flame/events.dart';
+import 'package:flame/game.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-import 'package:flutter/widgets.dart' show EdgeInsets;
-import 'package:flame_forge2d/flame_forge2d.dart';
-import 'package:shipslip/game/components/finish_zone.dart';
-import 'package:shipslip/game/components/ice_area.dart';
-import 'package:shipslip/game/components/player.dart';
-import 'package:shipslip/game/components/snow_area.dart';
-import 'package:shipslip/world/map_loader.dart';
-import 'package:shipslip/input/input_handler.dart';
-import 'package:shipslip/utils/asset_keys.dart';
+import 'components/player_component.dart';
 
-class ShipSlipGame extends Forge2DGame with HasKeyboardHandlerComponents {
-  ShipSlipGame({required this.onLevelComplete})
-    : super(gravity: Vector2.zero());
+/// Main game class for Ship Slip
+class ShipSlipGame extends FlameGame with HasCollisionDetection {
+  late PlayerComponent player;
+  late SpriteComponent background;
 
-  final VoidCallback onLevelComplete;
-  late final InputHandler _inputHandler;
-  late final Player player;
+  @override
+  Color backgroundColor() => const Color(0xFF4A90E2);
 
   @override
   Future<void> onLoad() async {
-    await super.onLoad();
+    super.onLoad();
 
-    // Viewport: use default so scaling adapts to device; background is fitted below
+    // Add background
+    await _addBackground();
 
-    images.prefix = 'assets/images/';
-    Vector2 worldSize;
-    try {
-      // Load the Tiled map using the MapLoader
-      final tiledMap = await MapLoader.loadBackground();
-      final bg = tiledMap
-        ..anchor = Anchor.topLeft
-        ..position = Vector2.zero();
+    // Add player
+    await _addPlayer();
 
-      // Set world size based on map dimensions (40x24 tiles, 128x128 each)
-      worldSize = Vector2(5120, 3072); // 40 * 128, 24 * 128
+    // Add simple UI overlay
+    await _addUI();
+  }
 
-      camera.backdrop.add(bg);
+  Future<void> _addBackground() async {
+    // Create a simple gradient background
+    background = SpriteComponent(
+      size: size,
+      paint: Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            const Color(0xFF87CEEB), // Sky blue
+            const Color(0xFFFFFFFF), // White
+            const Color(0xFF98FB98), // Pale green
+          ],
+        ).createShader(Rect.fromLTWH(0, 0, size.x, size.y)),
+    );
+    add(background);
+  }
 
-      // Clamp camera to the background bounds
-      camera.setBounds(
-        Rectangle.fromLTWH(0, 0, worldSize.x, worldSize.y),
-        considerViewport: true,
-      );
-    } catch (e) {
-      print('Error loading Tiled map: $e');
-      camera.backdrop.add(
-        RectangleComponent(
-          size: size.clone(),
-          paint: Paint()..color = const Color(0xFF0A0E14),
+  Future<void> _addPlayer() async {
+    player = PlayerComponent(position: Vector2(size.x / 2, size.y / 2));
+    add(player);
+  }
+
+  Future<void> _addUI() async {
+    // Add game title
+    final titleText = TextComponent(
+      text: 'Ship Slip Game',
+      position: Vector2(20, 20),
+      textRenderer: TextPaint(
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          shadows: [
+            Shadow(offset: Offset(1, 1), blurRadius: 2, color: Colors.black),
+          ],
         ),
-      );
-      worldSize = size.clone();
+      ),
+    );
+    add(titleText);
+
+    // Add instructions
+    final instructionsText = TextComponent(
+      text: 'Use WASD or Arrow Keys to move',
+      position: Vector2(20, size.y - 40),
+      textRenderer: TextPaint(
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+          shadows: [
+            Shadow(offset: Offset(1, 1), blurRadius: 2, color: Colors.black),
+          ],
+        ),
+      ),
+    );
+    add(instructionsText);
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    _handleInput();
+  }
+
+  void _handleInput() {
+    final keysPressed = HardwareKeyboard.instance.logicalKeysPressed;
+    Vector2 direction = Vector2.zero();
+
+    // WASD or Arrow key controls
+    if (keysPressed.contains(LogicalKeyboardKey.keyW) ||
+        keysPressed.contains(LogicalKeyboardKey.arrowUp)) {
+      direction.y -= 1;
+    }
+    if (keysPressed.contains(LogicalKeyboardKey.keyS) ||
+        keysPressed.contains(LogicalKeyboardKey.arrowDown)) {
+      direction.y += 1;
+    }
+    if (keysPressed.contains(LogicalKeyboardKey.keyA) ||
+        keysPressed.contains(LogicalKeyboardKey.arrowLeft)) {
+      direction.x -= 1;
+    }
+    if (keysPressed.contains(LogicalKeyboardKey.keyD) ||
+        keysPressed.contains(LogicalKeyboardKey.arrowRight)) {
+      direction.x += 1;
     }
 
-    add(
-      IceArea(
-        areaCenter: Vector2(worldSize.x * 0.25, worldSize.y * 0.5),
-        width: worldSize.x * 0.5,
-        height: worldSize.y * 0.9,
-      ),
-    );
-    add(
-      SnowArea(
-        areaCenter: Vector2(worldSize.x * 0.75, worldSize.y * 0.5),
-        width: worldSize.x * 0.5,
-        height: worldSize.y * 0.9,
-      ),
-    );
-
-    add(
-      FinishZone(
-        areaCenter: Vector2(worldSize.x * 0.85, worldSize.y * 0.2),
-        radius: 20,
-        onReached: onLevelComplete,
-      ),
-    );
-
-    _inputHandler = InputHandler();
-    final joystick = _inputHandler.createJoystick(size);
-    camera.viewport.add(joystick);
-    // Let viewport consume pointer events for joystick
-    camera.viewport.priority = 999;
-
-    player = Player(joystickProvider: () => joystick)
-      ..initialPosition = Vector2(worldSize.x * 0.15, worldSize.y * 0.2);
-    await add(player);
-    camera.follow(player, snap: true);
+    if (direction != Vector2.zero()) {
+      direction.normalize();
+      player.move(direction);
+    } else {
+      player.stop();
+    }
   }
 }
