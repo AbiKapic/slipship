@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'app/app.dart';
+import 'package:flame/game.dart';
+import 'game/core/snow_runner_game.dart';
 
 void main() {
-  runApp(const SnowBridgeRunnerApp());
+  runApp(GameWidget(game: SnowRunnerGame()));
 }

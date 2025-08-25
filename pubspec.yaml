@@ -37,6 +37,7 @@ dependencies:
 
   # Game engine
   flame: ^1.15.0
+  flame_tiled: ^1.21.0
 
   # State management for UI
   flutter_bloc: ^8.1.0
