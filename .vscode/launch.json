@@ -1,13 +1,47 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Flutter Run(debug)",
-            "type": "dart",
-            "request": "launch",
-            "program": "lib/main.dart",
-            "flutterMode": "debug",
-            "args": []
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run BuildRunner",
+      "command": "dart run build_runner build --delete-conflicting-outputs",
+      "request": "launch",
+      "type": "node-terminal"
+    },
+    {
+      "name": "Format",
+      "command": "dart format --enable-experiment=tall-style .",
+      "request": "launch",
+      "type": "node-terminal"
+    },
+    {
+      "name": "Clean install pods ",
+      "command": "cd ios && rm -rf Podfile.lock && rm -rf Pods && pod repo update && pod install",
+      "request": "launch",
+      "type": "node-terminal"
+    },
+    {
+      "name": "----DEBUG----",
+      "type": "node",
+      "request": "attach"
+    },
+    {
+      "name": "Snow Bridge Runner Debug",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "flutterMode": "debug"
+    },
+    {
+      "name": "----RELEASE----",
+      "type": "node",
+      "request": "attach"
+    },
+    {
+      "name": "Snow Bridge Runner Release",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "flutterMode": "release"
+    }
+  ]
 }

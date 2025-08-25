@@ -1,4 +1,7 @@
 {
+    "editor.codeActionsOnSave": {
+        "source.fixAll": "explicit"
+    },
     "files.associations": {
         "*.tsx": "xml",
         "*.tmx": "xml",
@@ -25,7 +28,8 @@
         "**/.dart_tool": true,
         "**/.fvm": false
     },
-    "dart.flutterSdkPath": ".fvm/versions/stable",
+    "svg.preview.background": "dark-transparent",
+    "dart.flutterSdkPath": ".fvm/flutter_sdk",
     "dart.sdkPath": ".fvm/flutter_sdk/bin/cache/dart-sdk",
     "dart.flutterSdkPaths": [
         ".fvm/flutter_sdk"
