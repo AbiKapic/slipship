@@ -72,7 +72,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
-    - assets/maps/
+    - assets/tiles/
     - assets/levels/
     - assets/audio/
     - assets/fonts/
