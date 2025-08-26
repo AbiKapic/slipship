@@ -3,13 +3,13 @@
   "configurations": [
     {
       "name": "Run BuildRunner",
-      "command": "dart run build_runner build --delete-conflicting-outputs",
+      "command": "fvm dart run build_runner build --delete-conflicting-outputs",
       "request": "launch",
       "type": "node-terminal"
     },
     {
       "name": "Format",
-      "command": "dart format --enable-experiment=tall-style .",
+      "command": "fvm dart format --enable-experiment=tall-style .",
       "request": "launch",
       "type": "node-terminal"
     },
@@ -25,11 +25,37 @@
       "request": "attach"
     },
     {
-      "name": "Snow Bridge Runner Debug",
+      "name": "ShipSlip Dev (Debug)",
       "request": "launch",
       "type": "dart",
-      "program": "lib/main.dart",
-      "flutterMode": "debug"
+      "program": "lib/main_dev.dart",
+      "flutterMode": "debug",
+      "args": [
+        "--flavor",
+        "dev"
+      ]
+    },
+    {
+      "name": "ShipSlip Dev (Profile)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_dev.dart",
+      "flutterMode": "profile",
+      "args": [
+        "--flavor",
+        "dev"
+      ]
+    },
+    {
+      "name": "ShipSlip Dev (Release)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_dev.dart",
+      "flutterMode": "release",
+      "args": [
+        "--flavor",
+        "dev"
+      ]
     },
     {
       "name": "----RELEASE----",
@@ -37,11 +63,37 @@
       "request": "attach"
     },
     {
-      "name": "Snow Bridge Runner Release",
+      "name": "ShipSlip Prod (Debug)",
       "request": "launch",
       "type": "dart",
-      "program": "lib/main.dart",
-      "flutterMode": "release"
+      "program": "lib/main_prod.dart",
+      "flutterMode": "debug",
+      "args": [
+        "--flavor",
+        "prod"
+      ]
+    },
+    {
+      "name": "ShipSlip Prod (Profile)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_prod.dart",
+      "flutterMode": "profile",
+      "args": [
+        "--flavor",
+        "prod"
+      ]
+    },
+    {
+      "name": "ShipSlip Prod (Release)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_prod.dart",
+      "flutterMode": "release",
+      "args": [
+        "--flavor",
+        "prod"
+      ]
     }
   ]
 }

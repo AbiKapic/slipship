@@ -33,5 +33,26 @@
     "dart.sdkPath": ".fvm/flutter_sdk/bin/cache/dart-sdk",
     "dart.flutterSdkPaths": [
         ".fvm/flutter_sdk"
-    ]
+    ],
+    "flutter.sdkPath": ".fvm/flutter_sdk",
+    "flutter.sdkPaths": [
+        ".fvm/flutter_sdk"
+    ],
+    "dart.useFvm": true,
+    "flutter.useFvm": true,
+    "dart.lineLength": 100,
+    "dart.enableSdkFormatter": true,
+    "dart.analysisExcludedFolders": [
+        "build",
+        ".fvm",
+        ".dart_tool"
+    ],
+    "emeraldwalk.runonsave": {
+        "commands": [
+            {
+                "match": "pubspec.yaml",
+                "cmd": "fvm flutter pub get"
+            }
+        ]
+    }
 }
