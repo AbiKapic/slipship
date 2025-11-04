@@ -13,4 +13,3 @@ class FlavorConfigProd extends FlavorConfig {
   @override
   bool get isProduction => true;
 }
-

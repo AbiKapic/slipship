@@ -17,6 +17,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.7.1"
+  animated_text_kit:
+    dependency: "direct main"
+    description:
+      name: animated_text_kit
+      sha256: adba517adb7e6adeb1eb5e1c8a147dd7bc664dfdf2f5e92226b572a91393a93d
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.2.3"
   archive:
     dependency: transitive
     description:
@@ -237,10 +245,18 @@ packages:
     dependency: "direct main"
     description:
       name: flame
-      sha256: c50e2f39e118f5f6a6f3339ce6825ee803c7e5fada95ec50fb02eb27944e0e76
+      sha256: "86f63943349ef4d891fd1988ccd9fa3d27952eb8d9eb17b774a64e78cd62aaa6"
       url: "https://pub.dev"
     source: hosted
-    version: "1.30.1"
+    version: "1.32.0"
+  flame_camera_tools:
+    dependency: "direct main"
+    description:
+      name: flame_camera_tools
+      sha256: "68e7ac1e5c1ae0043e9eca2d04a1d1741909a3c250ec88f03de783ece0e7c5aa"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.1"
   flame_tiled:
     dependency: "direct main"
     description:
@@ -262,6 +278,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "8.1.6"
+  flutter_hooks:
+    dependency: "direct main"
+    description:
+      name: flutter_hooks
+      sha256: "8ae1f090e5f4ef5cfa6670ce1ab5dddadd33f3533a7f9ba19d9f958aa2a89f42"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.21.3+1"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -280,6 +304,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  forge2d:
+    dependency: transitive
+    description:
+      name: forge2d
+      sha256: "6aac85f1cb9f7e3720bff5d6884ff2e1bcb74402e6fe271599b7b1f65574f5e2"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.13.1"
   frontend_server_client:
     dependency: transitive
     description:
@@ -296,6 +328,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.7.0"
+  glassmorphism_ui:
+    dependency: "direct main"
+    description:
+      name: glassmorphism_ui
+      sha256: "4a28b45fedb74c2b30e25495980394e3cf5b3634c74ec1ebedaef4d4c295f46f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.0"
   glob:
     dependency: transitive
     description:
@@ -448,6 +488,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"
+  newton_particles:
+    dependency: "direct main"
+    description:
+      name: newton_particles
+      sha256: "0f30be6a316b01434c665dc839aca6e0c774ea0a677d852ebc1564efa7b39579"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.2"
   ordered_set:
     dependency: transitive
     description:
@@ -464,6 +512,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.0"
+  particle_field:
+    dependency: "direct main"
+    description:
+      name: particle_field
+      sha256: "9a5ebdde32751f82aba64198e9bbd46738e789e275bf9e7a88318ed460be560e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   path:
     dependency: transitive
     description:
@@ -807,4 +863,4 @@ packages:
     version: "3.1.3"
 sdks:
   dart: ">=3.8.1 <4.0.0"
-  flutter: ">=3.27.1"
+  flutter: ">=3.32.0"

@@ -1,56 +1,57 @@
 import 'package:flutter/material.dart';
-import 'package:shipslip/dependencies.dart';
-import 'package:shipslip/flavor/flavor_config.dart';
 
 class TitleSection extends StatelessWidget {
   const TitleSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final flavorConfig = getIt<FlavorConfig>();
-
     return Column(
       children: [
-        // Main title with gradient effect
-        ShaderMask(
-          shaderCallback: (bounds) => const LinearGradient(
-            colors: [Colors.blue, Colors.purple, Colors.pink],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ).createShader(bounds),
-          child: Text(
-            flavorConfig.appName,
-            style: const TextStyle(
-              fontSize: 48,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              letterSpacing: 2,
-            ),
+        Container(
+          constraints: const BoxConstraints(maxWidth: 600, maxHeight: 280),
+          child: Image.asset(
+            'assets/images/slipship_title.png',
+            fit: BoxFit.contain,
+            filterQuality: FilterQuality.high,
+            color: const Color(0xFFE6F3FF).withOpacity(0.95),
+            colorBlendMode: BlendMode.modulate,
           ),
         ),
         const SizedBox(height: 16),
-        // Subtitle
         Text(
           'Navigate • Solve • Conquer',
           style: TextStyle(
-            fontSize: 18,
+            fontSize: 16,
             color: Colors.white.withOpacity(0.8),
-            fontWeight: FontWeight.w300,
-            letterSpacing: 1.5,
+            fontWeight: FontWeight.w400,
+            letterSpacing: 1.2,
+            shadows: [
+              Shadow(
+                color: Colors.white.withOpacity(0.3),
+                offset: const Offset(0, 1),
+                blurRadius: 4,
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 8),
-        // Tagline
+        const SizedBox(height: 12),
         Text(
           'A puzzle adventure awaits',
           style: TextStyle(
             fontSize: 14,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withOpacity(0.7),
             fontStyle: FontStyle.italic,
+            fontWeight: FontWeight.w300,
+            shadows: [
+              Shadow(
+                color: Colors.white.withOpacity(0.2),
+                offset: const Offset(0, 1),
+                blurRadius: 3,
+              ),
+            ],
           ),
         ),
       ],
     );
   }
 }
-

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:shipslip/dependencies.dart';
 import 'package:shipslip/flavor/flavor_banner.dart';
 import 'package:shipslip/flavor/flavor_config.dart';
-import 'package:shipslip/flavor/flavor_config_dev.dart';
 import 'package:shipslip/routes/app_pages.dart';
 import 'package:shipslip/routes/app_routes.dart';
 
@@ -12,7 +11,7 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: getIt<FlavorConfig>() is FlavorConfigDev ? 'ShipSlip Dev' : 'ShipSlip',
+      title: getIt<FlavorConfig>().appName,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,

@@ -11,20 +11,17 @@ class FlavorBanner extends StatelessWidget {
   final Widget child;
 
   @override
-  Widget build(BuildContext context) =>
-      kDebugMode || getIt<FlavorConfig>() is FlavorConfigDev
-          ? Banner(
-              location: BannerLocation.topStart,
-              message:
-                  getIt<FlavorConfig>() is FlavorConfigDev ? 'DEV' : 'PROD',
-              color: Colors.green.withOpacity(0.6),
-              textStyle: const TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 12.0,
-                letterSpacing: 1.0,
-              ),
-              child: child,
-            )
-          : Container(child: child);
+  Widget build(BuildContext context) => kDebugMode || getIt<FlavorConfig>() is FlavorConfigDev
+      ? Banner(
+          location: BannerLocation.topStart,
+          message: getIt<FlavorConfig>() is FlavorConfigDev ? 'DEV' : 'PROD',
+          color: const Color(0xFF4CAF50).withValues(alpha: 0.6),
+          textStyle: const TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 12.0,
+            letterSpacing: 1.0,
+          ),
+          child: child,
+        )
+      : Container(child: child);
 }
-

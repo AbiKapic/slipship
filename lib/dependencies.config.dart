@@ -12,9 +12,8 @@
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 
-import 'flavor/flavor_config.dart' as _i467;
 import 'flavor/flavor_config_dev.dart' as _i465;
-import 'flavor/flavor_config_prod.dart' as _i466;
+import 'flavor/flavor_config_prod.dart' as _i219;
 
 const String _dev = 'dev';
 const String _prod = 'prod';
@@ -30,23 +29,9 @@ _i174.GetIt init(
     () => _i465.FlavorConfigDev(),
     registerFor: {_dev},
   );
-  gh.factory<_i466.FlavorConfigProd>(
-    () => _i466.FlavorConfigProd(),
+  gh.factory<_i219.FlavorConfigProd>(
+    () => _i219.FlavorConfigProd(),
     registerFor: {_prod},
   );
-
-  // Register the base FlavorConfig interface
-  if (environment == _dev) {
-    gh.factory<_i467.FlavorConfig>(
-      () => _i465.FlavorConfigDev(),
-      registerFor: {_dev},
-    );
-  } else if (environment == _prod) {
-    gh.factory<_i467.FlavorConfig>(
-      () => _i466.FlavorConfigProd(),
-      registerFor: {_prod},
-    );
-  }
-
   return getIt;
 }
