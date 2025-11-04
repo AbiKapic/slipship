@@ -34,10 +34,10 @@ class Kid extends SpriteAnimationGroupComponent<PlayerState>
     final walkRight = SpriteAnimation.spriteList([tile(0, 1), tile(0, 2)], stepTime: 0.12);
     final walkLeft = walkRight;
     final walkDown = SpriteAnimation.spriteList([tile(1, 0), tile(1, 1)], stepTime: 0.12);
-    final walkUp = SpriteAnimation.spriteList([tile(0, 0), tile(0, 1)], stepTime: 0.12);
+    final walkUp = SpriteAnimation.spriteList([tile(1, 2), tile(1, 2)], stepTime: 0.12);
 
     final idleDown = SpriteAnimation.spriteList([tile(1, 0)], stepTime: 1.0);
-    final idleUp = SpriteAnimation.spriteList([tile(0, 0)], stepTime: 1.0);
+    final idleUp = SpriteAnimation.spriteList([tile(1, 2)], stepTime: 1.0);
     final idleRight = SpriteAnimation.spriteList([tile(0, 1)], stepTime: 1.0);
     final idleLeft = idleRight;
 
@@ -85,26 +85,38 @@ class Kid extends SpriteAnimationGroupComponent<PlayerState>
       return;
     }
 
-    if (_move.x > 0) {
-      current = PlayerState.walkRight;
-      _facing = PlayerState.walkRight;
-      if (_facingLeft) {
-        scale.x = 1;
-        _facingLeft = false;
+    if (_move.x.abs() > _move.y.abs()) {
+      if (_move.x > 0) {
+        current = PlayerState.walkRight;
+        _facing = PlayerState.walkRight;
+        if (_facingLeft) {
+          scale.x = 1;
+          _facingLeft = false;
+        }
+      } else if (_move.x < 0) {
+        current = PlayerState.walkLeft;
+        _facing = PlayerState.walkLeft;
+        if (!_facingLeft) {
+          scale.x = -1;
+          _facingLeft = true;
+        }
       }
-    } else if (_move.x < 0) {
-      current = PlayerState.walkLeft;
-      _facing = PlayerState.walkLeft;
-      if (!_facingLeft) {
-        scale.x = -1;
-        _facingLeft = true;
+    } else {
+      if (_move.y < 0) {
+        current = PlayerState.walkUp;
+        _facing = PlayerState.walkUp;
+        if (_facingLeft) {
+          scale.x = 1;
+          _facingLeft = false;
+        }
+      } else if (_move.y > 0) {
+        current = PlayerState.walkDown;
+        _facing = PlayerState.walkDown;
+        if (_facingLeft) {
+          scale.x = 1;
+          _facingLeft = false;
+        }
       }
-    } else if (_move.y < 0) {
-      current = PlayerState.walkUp;
-      _facing = PlayerState.walkUp;
-    } else if (_move.y > 0) {
-      current = PlayerState.walkDown;
-      _facing = PlayerState.walkDown;
     }
   }
 

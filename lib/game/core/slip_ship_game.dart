@@ -70,9 +70,8 @@ class SlipShipGame extends FlameGame with HasCollisionDetection {
     // 6) Camera follows player
     cam.follow(player, maxSpeed: 300);
 
-    // 7) Add Directional Pad as HUD (fixed to viewport)
+    // 7) Add Directional Pad as HUD (fixed to viewport) - positioned at bottom-left
     dPad = DirectionalPad()
-      ..position = Vector2(40, 40)
       ..priority = 1000;
 
     // Attach to camera viewport so it stays pinned to screen
@@ -148,23 +147,48 @@ class SlipShipGame extends FlameGame with HasCollisionDetection {
     }
 
     // Animation direction
-    if (_velocity.length2 > 0) {
+    if (dPadDirection.length2 > 0) {
+      player.setDirection(dPadDirection);
+    } else if (_velocity.length2 > 0) {
       player.setDirection(_velocity);
     } else {
       player.setDirection(Vector2.zero());
     }
 
+    // Position joystick at bottom-left
+    final viewportSize = cam.viewport.size;
+    final centerY = dPad.buttonSize + dPad.padding;
+    final joystickHeight = centerY * 2 + dPad.buttonSize;
+    dPad.position = Vector2(20, viewportSize.y - joystickHeight - 20);
+
     // Keep camera within map bounds to prevent black screens
     final mapWidth = 15 * 44.0;
     final mapHeight = 40 * 44.0;
-    final viewportSize = cam.viewport.size;
+    final anchor = cam.viewfinder.anchor;
 
-    // Clamp camera position to keep map visible
+    // Adjust camera position when moving up to keep player visible
+    // Calculate where player appears on screen based on anchor
+    if (_velocity.y < 0) {
+      final anchorScreenY = anchor.y * viewportSize.y;
+      final playerOffsetFromCamera = player.position.y - cam.viewfinder.position.y;
+      final playerScreenY = anchorScreenY + playerOffsetFromCamera;
+      final minVisibleY = 100.0;
+      
+      if (playerScreenY < minVisibleY) {
+        final adjustment = minVisibleY - playerScreenY;
+        cam.viewfinder.position.y = (cam.viewfinder.position.y - adjustment).clamp(
+          viewportSize.y * anchor.y,
+          mapHeight - viewportSize.y * (1 - anchor.y),
+        );
+      }
+    }
+
+    // Clamp camera position accounting for viewfinder anchor offset
     final cameraX = cam.viewfinder.position.x
-        .clamp(viewportSize.x / 2, mapWidth - viewportSize.x / 2)
+        .clamp(viewportSize.x * anchor.x, mapWidth - viewportSize.x * (1 - anchor.x))
         .toDouble();
     final cameraY = cam.viewfinder.position.y
-        .clamp(viewportSize.y / 2, mapHeight - viewportSize.y / 2)
+        .clamp(viewportSize.y * anchor.y, mapHeight - viewportSize.y * (1 - anchor.y))
         .toDouble();
 
     cam.viewfinder.position = Vector2(cameraX, cameraY);

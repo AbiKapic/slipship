@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flutter/material.dart';
@@ -6,13 +7,13 @@ class DirectionalPad extends PositionComponent with HasGameReference {
   final Vector2 _direction = Vector2.zero();
   final Set<Direction> _pressedDirections = {};
 
-  late final PositionComponent _upButton;
-  late final PositionComponent _downButton;
-  late final PositionComponent _leftButton;
-  late final PositionComponent _rightButton;
+  late final DirectionalButton _upButton;
+  late final DirectionalButton _downButton;
+  late final DirectionalButton _leftButton;
+  late final DirectionalButton _rightButton;
 
-  final double buttonSize = 60.0;
-  final double padding = 8.0;
+  final double buttonSize = 45.0;
+  final double padding = 6.0;
 
   Vector2 get direction => _direction.clone();
 
@@ -20,14 +21,30 @@ class DirectionalPad extends PositionComponent with HasGameReference {
   Future<void> onLoad() async {
     await super.onLoad();
 
-    final buttonPaint = Paint()
-      ..color = const Color(0xFF000000).withOpacity(0.6)
-      ..style = PaintingStyle.fill;
-
-    _upButton = _createButton(buttonPaint, Direction.up);
-    _downButton = _createButton(buttonPaint, Direction.down);
-    _leftButton = _createButton(buttonPaint, Direction.left);
-    _rightButton = _createButton(buttonPaint, Direction.right);
+    _upButton = DirectionalButton(
+      direction: Direction.up,
+      size: buttonSize,
+      onPressed: _onDirectionPressed,
+      onReleased: _onDirectionReleased,
+    );
+    _downButton = DirectionalButton(
+      direction: Direction.down,
+      size: buttonSize,
+      onPressed: _onDirectionPressed,
+      onReleased: _onDirectionReleased,
+    );
+    _leftButton = DirectionalButton(
+      direction: Direction.left,
+      size: buttonSize,
+      onPressed: _onDirectionPressed,
+      onReleased: _onDirectionReleased,
+    );
+    _rightButton = DirectionalButton(
+      direction: Direction.right,
+      size: buttonSize,
+      onPressed: _onDirectionPressed,
+      onReleased: _onDirectionReleased,
+    );
 
     final centerX = buttonSize + padding;
     final centerY = buttonSize + padding;
@@ -40,29 +57,16 @@ class DirectionalPad extends PositionComponent with HasGameReference {
     addAll([_upButton, _downButton, _leftButton, _rightButton]);
   }
 
-  PositionComponent _createButton(Paint buttonPaint, Direction dir) {
-    return CircleComponent(
-      radius: buttonSize / 2,
-      paint: buttonPaint,
-      children: [
-        ButtonTapComponent(
-          direction: dir,
-          onPressed: _onDirectionPressed,
-          onReleased: _onDirectionReleased,
-          size: Vector2.all(buttonSize),
-        ),
-      ],
-    );
-  }
-
   void _onDirectionPressed(Direction direction) {
     _pressedDirections.add(direction);
     _updateDirection();
+    _updateButtonStates();
   }
 
   void _onDirectionReleased(Direction direction) {
     _pressedDirections.remove(direction);
     _updateDirection();
+    _updateButtonStates();
   }
 
   void _updateDirection() {
@@ -85,21 +89,36 @@ class DirectionalPad extends PositionComponent with HasGameReference {
       _direction.normalize();
     }
   }
+
+  void _updateButtonStates() {
+    _upButton.setPressed(_pressedDirections.contains(Direction.up));
+    _downButton.setPressed(_pressedDirections.contains(Direction.down));
+    _leftButton.setPressed(_pressedDirections.contains(Direction.left));
+    _rightButton.setPressed(_pressedDirections.contains(Direction.right));
+  }
 }
 
 enum Direction { up, down, left, right }
 
-class ButtonTapComponent extends RectangleComponent with TapCallbacks {
+class DirectionalButton extends PositionComponent with TapCallbacks {
   final Direction direction;
   final Function(Direction) onPressed;
   final Function(Direction) onReleased;
+  
+  bool _isPressed = false;
 
-  ButtonTapComponent({
+  DirectionalButton({
     required this.direction,
+    required double size,
     required this.onPressed,
     required this.onReleased,
-    required Vector2 size,
-  }) : super(size: size, paint: Paint()..color = Colors.transparent);
+  }) : super(size: Vector2.all(size));
+
+  void setPressed(bool pressed) {
+    if (_isPressed != pressed) {
+      _isPressed = pressed;
+    }
+  }
 
   @override
   bool onTapDown(TapDownEvent event) {
@@ -117,5 +136,83 @@ class ButtonTapComponent extends RectangleComponent with TapCallbacks {
   bool onTapCancel(TapCancelEvent event) {
     onReleased(direction);
     return true;
+  }
+
+  @override
+  void render(Canvas canvas) {
+    final radius = size.x / 2;
+    final center = Offset(radius, radius);
+
+    final gradient = RadialGradient(
+      colors: _isPressed
+          ? [
+              const Color(0xFF5A67D8),
+              const Color(0xFF4C51BF),
+              const Color(0xFF434190),
+            ]
+          : [
+              const Color(0xFF667EEA),
+              const Color(0xFF5A67D8),
+              const Color(0xFF4C51BF),
+            ],
+      stops: const [0.0, 0.6, 1.0],
+    );
+
+    final buttonPaint = Paint()
+      ..shader = gradient.createShader(Rect.fromCircle(center: center, radius: radius))
+      ..style = PaintingStyle.fill;
+
+    final borderPaint = Paint()
+      ..color = Colors.white.withOpacity(0.4)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+
+    final shadowPaint = Paint()
+      ..color = Colors.black.withOpacity(0.3)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.0);
+
+    canvas.drawCircle(center, radius + 2, shadowPaint);
+    canvas.drawCircle(center, radius, buttonPaint);
+    canvas.drawCircle(center, radius, borderPaint);
+
+    final arrowSize = size.x * 0.4;
+    final arrowPaint = Paint()
+      ..color = Colors.white.withOpacity(_isPressed ? 1.0 : 0.9)
+      ..style = PaintingStyle.fill;
+
+    _drawArrow(canvas, center, arrowSize, arrowPaint);
+  }
+
+  void _drawArrow(Canvas canvas, Offset center, double size, Paint paint) {
+    final path = Path();
+    
+    switch (direction) {
+      case Direction.up:
+        path.moveTo(center.dx, center.dy - size / 2);
+        path.lineTo(center.dx - size / 2, center.dy + size / 4);
+        path.lineTo(center.dx + size / 2, center.dy + size / 4);
+        path.close();
+        break;
+      case Direction.down:
+        path.moveTo(center.dx, center.dy + size / 2);
+        path.lineTo(center.dx - size / 2, center.dy - size / 4);
+        path.lineTo(center.dx + size / 2, center.dy - size / 4);
+        path.close();
+        break;
+      case Direction.left:
+        path.moveTo(center.dx - size / 2, center.dy);
+        path.lineTo(center.dx + size / 4, center.dy - size / 2);
+        path.lineTo(center.dx + size / 4, center.dy + size / 2);
+        path.close();
+        break;
+      case Direction.right:
+        path.moveTo(center.dx + size / 2, center.dy);
+        path.lineTo(center.dx - size / 4, center.dy - size / 2);
+        path.lineTo(center.dx - size / 4, center.dy + size / 2);
+        path.close();
+        break;
+    }
+    
+    canvas.drawPath(path, paint);
   }
 }
