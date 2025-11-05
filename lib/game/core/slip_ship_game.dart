@@ -15,12 +15,13 @@ class SlipShipGame extends FlameGame with HasCollisionDetection {
   late final TiledComponent level;
   late final Kid player;
   late final List<CollisionTile> collisionTiles;
+  late final List<CollisionTile> riverTiles;
   late final DirectionalPad dPad;
+  late final Vector2 startPosition;
 
-  // Movement smoothing
   final Vector2 _velocity = Vector2.zero();
-  final double _accel = 900; // px/s^2
-  final double _decel = 1400; // px/s^2
+  final double _accel = 900;
+  final double _decel = 1400;
 
   @override
   Future<void> onLoad() async {
@@ -41,27 +42,35 @@ class SlipShipGame extends FlameGame with HasCollisionDetection {
     level = await TiledComponent.load('slip_ship_map.tmx', Vector2(44, 44));
     world.add(level);
 
-    // 3) Create collision tiles from non-ground layers
+    final mapWidth = 15 * 44.0;
+    final mapHeight = 40 * 44.0;
+    startPosition = Vector2(mapWidth / 2, mapHeight - 24);
+
     collisionTiles = <CollisionTile>[];
+    riverTiles = <CollisionTile>[];
     final tileLayers = level.tileMap.map.layers.whereType<TileLayer>();
 
     for (final layer in tileLayers) {
-      if (layer.name != 'ground') {
+      if (layer.name == 'river') {
         final layerCollisions = CollisionManager.createCollisionTilesFromLayer(
           layer,
-          44, // tileWidth
-          44, // tileHeight
+          44,
+          44,
+        );
+        riverTiles.addAll(layerCollisions);
+        world.addAll(layerCollisions);
+      } else if (layer.name != 'ground') {
+        final layerCollisions = CollisionManager.createCollisionTilesFromLayer(
+          layer,
+          44,
+          44,
         );
         collisionTiles.addAll(layerCollisions);
         world.addAll(layerCollisions);
       }
     }
 
-    // 4) Create player at center bottom of map
-    final mapWidth = 15 * 44.0; // 660 pixels
-    final mapHeight = 40 * 44.0; // 1760 pixels
-    // With Anchor.bottomCenter, position refers to feet of character
-    player = Kid()..position = Vector2(mapWidth / 2, mapHeight - 24); // Feet positioned near bottom
+    player = Kid()..position = startPosition.clone();
     world.add(player);
 
     // 5) Set camera to look at player position
@@ -127,15 +136,13 @@ class SlipShipGame extends FlameGame with HasCollisionDetection {
         _velocity.x = 0; // stop X on collision
       }
 
-      // Try Y axis
       candidate = Vector2(player.position.x, player.position.y + dy);
       if (!CollisionManager.checkCollision(candidate, player.size, collisionTiles)) {
         player.position.y = candidate.y;
       } else {
-        _velocity.y = 0; // stop Y on collision
+        _velocity.y = 0;
       }
 
-      // Keep player within map bounds (bottomCenter anchor)
       final mapWidth = 15 * 44.0;
       final mapHeight = 40 * 44.0;
       final playerHalfWidth = player.size.x / 2;
@@ -146,7 +153,12 @@ class SlipShipGame extends FlameGame with HasCollisionDetection {
       player.position.y = player.position.y.clamp(player.size.y, mapHeight).toDouble();
     }
 
-    // Animation direction
+    if (CollisionManager.checkCollision(player.position, player.size, riverTiles)) {
+      player.position.setFrom(startPosition);
+      _velocity.setZero();
+      cam.viewfinder.position.setFrom(startPosition);
+    }
+
     if (dPadDirection.length2 > 0) {
       player.setDirection(dPadDirection);
     } else if (_velocity.length2 > 0) {
