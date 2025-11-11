@@ -16,12 +16,15 @@ class SlipShipGame extends FlameGame with HasCollisionDetection {
   late final Kid player;
   late final List<CollisionTile> collisionTiles;
   late final List<CollisionTile> riverTiles;
+  late final List<CollisionTile> bridgeTiles;
   late final DirectionalPad dPad;
   late final Vector2 startPosition;
 
   final Vector2 _velocity = Vector2.zero();
   final double _accel = 900;
   final double _decel = 1400;
+  double _waterSlideTimer = 0.0;
+  static const double _waterSlideDuration = 0.3;
 
   @override
   Future<void> onLoad() async {
@@ -48,6 +51,7 @@ class SlipShipGame extends FlameGame with HasCollisionDetection {
 
     collisionTiles = <CollisionTile>[];
     riverTiles = <CollisionTile>[];
+    bridgeTiles = <CollisionTile>[];
     final tileLayers = level.tileMap.map.layers.whereType<TileLayer>();
 
     for (final layer in tileLayers) {
@@ -58,6 +62,14 @@ class SlipShipGame extends FlameGame with HasCollisionDetection {
           44,
         );
         riverTiles.addAll(layerCollisions);
+        world.addAll(layerCollisions);
+      } else if (layer.name == 'bridge') {
+        final layerCollisions = CollisionManager.createCollisionTilesFromLayer(
+          layer,
+          44,
+          44,
+        );
+        bridgeTiles.addAll(layerCollisions);
         world.addAll(layerCollisions);
       } else if (layer.name != 'ground') {
         final layerCollisions = CollisionManager.createCollisionTilesFromLayer(
@@ -101,7 +113,6 @@ class SlipShipGame extends FlameGame with HasCollisionDetection {
       targetSpeed = player.speed;
     }
 
-    // Update velocity with acceleration/deceleration
     if (inputDir.length2 > 0) {
       final desiredVel = inputDir * targetSpeed;
       final deltaVel = desiredVel - _velocity;
@@ -112,7 +123,6 @@ class SlipShipGame extends FlameGame with HasCollisionDetection {
         _velocity.add(deltaVel.normalized() * maxChange);
       }
     } else if (_velocity.length2 > 0) {
-      // Apply friction
       final speed = _velocity.length;
       final drop = _decel * dt;
       final newSpeed = (speed - drop).clamp(0, double.infinity);
@@ -153,10 +163,37 @@ class SlipShipGame extends FlameGame with HasCollisionDetection {
       player.position.y = player.position.y.clamp(player.size.y, mapHeight).toDouble();
     }
 
-    if (CollisionManager.checkCollision(player.position, player.size, riverTiles)) {
-      player.position.setFrom(startPosition);
-      _velocity.setZero();
-      cam.viewfinder.position.setFrom(startPosition);
+    final isOnBridge = CollisionManager.checkCollision(player.position, player.size, bridgeTiles);
+    final isOnWater = CollisionManager.checkCollision(player.position, player.size, riverTiles) ||
+        CollisionManager.checkCollision(Vector2(player.position.x - 8, player.position.y), player.size, riverTiles) ||
+        CollisionManager.checkCollision(Vector2(player.position.x + 8, player.position.y), player.size, riverTiles);
+
+    if (isOnWater && !isOnBridge) {
+      if (inputDir.length2 > 0) {
+        final waterFriction = 0.6;
+        _velocity.scale(1.0 - waterFriction * dt * 3);
+      } else {
+        final waterPush = Vector2(0, 80);
+        _velocity.add(waterPush * dt);
+        final speed = _velocity.length;
+        final drop = _decel * 0.15 * dt;
+        final newSpeed = (speed - drop).clamp(0, double.infinity);
+        if (newSpeed == 0) {
+          _velocity.setZero();
+        } else {
+          _velocity.scale(newSpeed / speed);
+        }
+      }
+      
+      _waterSlideTimer += dt;
+      if (_waterSlideTimer >= _waterSlideDuration) {
+        player.position.setFrom(startPosition);
+        _velocity.setZero();
+        cam.viewfinder.position.setFrom(startPosition);
+        _waterSlideTimer = 0.0;
+      }
+    } else {
+      _waterSlideTimer = 0.0;
     }
 
     if (dPadDirection.length2 > 0) {
