@@ -1,11 +1,18 @@
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame_tiled/flame_tiled.dart';
+import 'dart:ui' as ui;
 
 import '../world/collision_manager.dart';
 import '../entities/collision_tile.dart';
 import '../entities/kid.dart';
+import '../entities/puzzle_piece.dart';
+import '../entities/puzzle_grid.dart';
+import '../entities/start_position_marker.dart';
 import '../ui/directional_pad.dart';
+import '../bloc/puzzle_bloc.dart';
+import '../bloc/puzzle_event.dart';
+import '../utils/puzzle_image_splitter.dart';
 
 class SlipShipGame extends FlameGame with HasCollisionDetection {
   @override
@@ -19,6 +26,15 @@ class SlipShipGame extends FlameGame with HasCollisionDetection {
   late final List<CollisionTile> bridgeTiles;
   late final DirectionalPad dPad;
   late final Vector2 startPosition;
+  
+  PuzzleBloc? puzzleBloc;
+  PuzzlePiece? currentPuzzlePiece;
+  PuzzleGrid? puzzleGrid;
+  List<Sprite> puzzleSprites = [];
+  
+  bool _wasAtStartPosition = false;
+  static const double _startPositionThreshold = 30.0;
+  bool _placementPopupLock = false;
 
   final Vector2 _velocity = Vector2.zero();
   final double _accel = 900;
@@ -97,6 +113,53 @@ class SlipShipGame extends FlameGame with HasCollisionDetection {
 
     // Attach to camera viewport so it stays pinned to screen
     cam.viewport.add(dPad);
+    
+    puzzleSprites = await PuzzleImageSplitter.splitPuzzleImage();
+    
+    final gridMapWidth = 15 * 44.0;
+    puzzleGrid = PuzzleGrid(
+      placedPieces: {},
+      puzzleSprites: puzzleSprites,
+      position: Vector2(gridMapWidth / 2 - PuzzleGrid.totalGridSize / 2 + 100, 120),
+      isGameComplete: false,
+    );
+    world.add(puzzleGrid!);
+    
+    final startMarker = StartPositionMarker(position: startPosition.clone());
+    world.add(startMarker);
+  }
+  
+  void setPuzzleBloc(PuzzleBloc bloc) {
+    puzzleBloc = bloc;
+    _setupPuzzleBlocListener();
+  }
+  
+  void _setupPuzzleBlocListener() {
+    puzzleBloc?.stream.listen((state) {
+      if (currentPuzzlePiece != null && (state.selectedPuzzleIndex == null || !state.isCarryingPiece)) {
+        currentPuzzlePiece?.removeFromParent();
+        currentPuzzlePiece = null;
+      }
+      
+      if (state.selectedPuzzleIndex != null && currentPuzzlePiece == null) {
+        final pieceIndex = state.selectedPuzzleIndex!;
+        if (pieceIndex < puzzleSprites.length) {
+          currentPuzzlePiece = PuzzlePiece(
+            pieceIndex: pieceIndex,
+            player: player,
+            sprite: puzzleSprites[pieceIndex],
+          );
+          world.add(currentPuzzlePiece!);
+        }
+      }
+      
+      if (puzzleGrid != null) {
+        final newPlacedPieces = Map<int, int>.from(state.placedPieces);
+        puzzleGrid!.placedPieces.clear();
+        puzzleGrid!.placedPieces.addAll(newPlacedPieces);
+        puzzleGrid!.isGameComplete = state.isGameComplete;
+      }
+    });
   }
 
   @override
@@ -113,6 +176,11 @@ class SlipShipGame extends FlameGame with HasCollisionDetection {
       targetSpeed = player.speed;
     }
 
+    final isCarryingPiece = puzzleBloc?.state.isCarryingPiece ?? false;
+    if (isCarryingPiece) {
+      targetSpeed *= 0.85;
+    }
+    
     if (inputDir.length2 > 0) {
       final desiredVel = inputDir * targetSpeed;
       final deltaVel = desiredVel - _velocity;
@@ -121,6 +189,10 @@ class SlipShipGame extends FlameGame with HasCollisionDetection {
         _velocity.setFrom(desiredVel);
       } else {
         _velocity.add(deltaVel.normalized() * maxChange);
+      }
+      
+      if (isCarryingPiece) {
+        _velocity.scale(0.92);
       }
     } else if (_velocity.length2 > 0) {
       final speed = _velocity.length;
@@ -187,6 +259,7 @@ class SlipShipGame extends FlameGame with HasCollisionDetection {
       
       _waterSlideTimer += dt;
       if (_waterSlideTimer >= _waterSlideDuration) {
+        puzzleBloc?.add(const ResetPuzzle());
         player.position.setFrom(startPosition);
         _velocity.setZero();
         cam.viewfinder.position.setFrom(startPosition);
@@ -195,6 +268,37 @@ class SlipShipGame extends FlameGame with HasCollisionDetection {
     } else {
       _waterSlideTimer = 0.0;
     }
+    
+    if (puzzleGrid != null) {
+      final gridRect = ui.Rect.fromLTWH(
+        puzzleGrid!.position.x,
+        puzzleGrid!.position.y,
+        PuzzleGrid.totalGridSize,
+        PuzzleGrid.totalGridSize,
+      ).inflate(16);
+      final p = ui.Offset(player.position.x, player.position.y);
+      final isInGrid = gridRect.contains(p);
+
+      if (!isInGrid) {
+        _placementPopupLock = false;
+      } else if (puzzleBloc?.state.isCarryingPiece == true &&
+          (puzzleBloc?.state.isShowingPlacementPopup == false) &&
+          !_placementPopupLock) {
+        _placementPopupLock = true;
+        puzzleBloc?.add(const CrossBridge());
+      }
+    }
+    
+    final distanceToStart = (player.position - startPosition).length;
+    final isAtStartPosition = distanceToStart < _startPositionThreshold;
+    
+    if (isAtStartPosition && !_wasAtStartPosition) {
+      if (puzzleBloc?.state.isCarryingPiece == false && 
+          puzzleBloc?.state.uncollectedPieces.isNotEmpty == true) {
+        puzzleBloc?.add(const ShowSelectionPopup());
+      }
+    }
+    _wasAtStartPosition = isAtStartPosition;
 
     if (dPadDirection.length2 > 0) {
       player.setDirection(dPadDirection);

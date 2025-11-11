@@ -5,7 +5,7 @@ enum PlayerState { idleDown, idleUp, idleLeft, idleRight, walkLeft, walkRight, w
 
 class Kid extends SpriteAnimationGroupComponent<PlayerState>
     with HasGameReference, CollisionCallbacks {
-  final double speed = 140;
+  final double speed = 260;
   final Vector2 _move = Vector2.zero();
   PlayerState _facing = PlayerState.idleDown;
   bool _facingLeft = false;
