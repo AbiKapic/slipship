@@ -19,6 +19,21 @@ android {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
+    flavorDimensions.add("default")
+
+    productFlavors {
+        create("dev") {
+            dimension = "default"
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
+        }
+        create("prod") {
+            dimension = "default"
+            applicationIdSuffix = ""
+            versionNameSuffix = ""
+        }
+    }
+
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.shipslip"

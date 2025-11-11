@@ -34,10 +34,31 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-  flame:
-  flame_forge2d:
-  flame_tiled:
-  shared_preferences:
+
+  # Game engine
+  flame: ^1.15.0
+  flame_tiled: ^1.21.0
+
+  # State management for UI
+  flutter_bloc: ^8.1.0
+  equatable: ^2.0.5
+
+  # Local storage
+  shared_preferences: ^2.2.2
+  xml: ^6.6.1
+
+  # Dependency injection
+  get_it: ^7.6.4
+  injectable: ^2.4.2
+
+  # Routing
+  go_router: ^12.1.3
+  flutter_hooks: ^0.21.3+1
+  flame_camera_tools: ^4.0.1
+  animated_text_kit: ^4.2.3
+  particle_field: ^1.0.0
+  newton_particles: ^0.2.2
+  glassmorphism_ui: ^0.3.0
 
 dev_dependencies:
   flutter_test:
@@ -50,6 +71,13 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
 
+  # Analysis and linting
+  very_good_analysis: ^5.1.0
+
+  # Code generation
+  injectable_generator: ^2.6.1
+  build_runner: ^2.4.8
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
@@ -61,8 +89,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/images/players/
     - assets/tiles/
-    - assets/maps/
     - assets/levels/
     - assets/audio/
     - assets/fonts/
