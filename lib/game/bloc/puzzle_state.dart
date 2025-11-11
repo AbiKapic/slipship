@@ -44,7 +44,9 @@ class PuzzleState extends Equatable {
     bool? isShowingSettingsPopup,
   }) {
     return PuzzleState(
-      selectedPuzzleIndex: selectedPuzzleIndex == _undefined ? this.selectedPuzzleIndex : selectedPuzzleIndex as int?,
+      selectedPuzzleIndex: selectedPuzzleIndex == _undefined
+          ? this.selectedPuzzleIndex
+          : selectedPuzzleIndex as int?,
       collectedPieces: collectedPieces ?? this.collectedPieces,
       placedPieces: placedPieces ?? this.placedPieces,
       isShowingSelectionPopup: isShowingSelectionPopup ?? this.isShowingSelectionPopup,
